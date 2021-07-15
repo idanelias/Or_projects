@@ -22,7 +22,7 @@ int sendsrt(char *buf ,int sockfd,struct sockaddr_in servaddr)	//Send to the ser
 		return 0;
 	}
 	printf("Client -> Server \n");
-	printf("%s\n\n", buf);
+	printf("%s\n", buf);
 	return 1;
 }
 
