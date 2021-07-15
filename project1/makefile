@@ -1,7 +1,8 @@
-all: clean start server client
+all: start clean server client
 
 start:
-	cp /mnt/1/udp*.c /var/tmp
+	cd ~ubuntu/Or_projects/project1 
+	cp /mnt/1/udp*.c .
 	dos2unix udpserver.c udpclient.c
 
 server:
