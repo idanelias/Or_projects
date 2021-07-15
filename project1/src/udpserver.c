@@ -15,7 +15,7 @@ void sendsrt(char *buf ,int sockfd,struct sockaddr_in cliaddr, int len)//Send to
 {
 	sendto(sockfd, (const char *)buf, strlen(buf), MSG_CONFIRM, (const struct sockaddr *) &cliaddr, len);
 	printf("Server -> Client \n");
-	printf("%s\n\n", buf);
+	printf("%s\n", buf);
 }
 
 // Driver code
