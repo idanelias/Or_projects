@@ -1,0 +1,8 @@
+The first task will be an echo_server server in udp communication.
+Create two programs, one client and the other server.
+each will communicate with the other in UDP, so that every message that the user sends is "returned" to him as
+"Echo" from the server.
+
+the mission needs to be done by:
+Thursday
+Jul 15, 2021
