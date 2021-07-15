@@ -16,7 +16,5 @@
     - branch for every feature, commit, and push in small chunks to your repo (well you dont have to, but this is for you, saves alot of headaches, 
       especially in the final project. trust me)
     - when ready make a pull request to send me your code
-   
-## Example project
-you can find an example of a project already inside here.
-go to examples->example_project
+
+good luck!!!
