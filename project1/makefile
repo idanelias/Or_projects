@@ -1,15 +1,15 @@
 all: start clean server client
 
 start:
-	cd ~ubuntu/Or_projects/project1 
-	cp /mnt/1/udp*.c .
-	dos2unix udpserver.c udpclient.c
+	cd ~ubuntu/Or_projects/project1/
+	cp /mnt/1/src/udp*.c src
+	dos2unix src/udpserver.c src/udpclient.c
 
 server:
-	gcc udpserver.c -o server
+	gcc src/udpserver.c -o server
 
 client: 
-	gcc udpclient.c -o client
+	gcc src/udpclient.c -o client
 
 
 clean:

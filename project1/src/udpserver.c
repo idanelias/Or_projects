@@ -1,15 +1,5 @@
 // Server side implementation of UDP client-server model
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-
-#define PORT 4080 //The port number.
-#define MAXLINE 1024//The maximum lengh to the string.
+#include "../include/udp.h"
 
 void sendsrt(char *buf ,int sockfd,struct sockaddr_in cliaddr, int len)//Send to client.
 {
