@@ -8,35 +8,58 @@ void sendsrt(char *buf ,int sockfd,struct sockaddr_in cliaddr, int len)//Send to
 	printf("%s\n", buf);
 }
 
+int binds(int sockfd,struct sockaddr_in servaddr)
+{
+	if ( bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr)) == -1 )
+	{
+		perror("bind failed");
+		return 0;
+	}
+	return 1;
+}
+
+void memsetfunc(struct sockaddr_in addr)
+{
+	memset(&addr, 0, sizeof(addr));
+}
+
+int sock()
+{
+	int sockfd;
+	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1 )
+	{
+		perror("socket creation failed");
+	}
+	return sockfd;
+}
+
 // Driver code
 int main() {
 	int sockfd;
 	char buf[MAXLINE];
 	struct sockaddr_in servaddr, cliaddr;
 	int len, n;
-
+	
 	// Creating socket file descriptor
-	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1 )
+	sockfd = sock();
+	if ( sockfd  == -1 )
 	{
-		perror("socket creation failed");
 		return 0;
 	}
 
-	memset(&servaddr, 0, sizeof(servaddr));
-	memset(&cliaddr, 0, sizeof(cliaddr));
+	memsetfunc(servaddr);
+	memsetfunc(cliaddr);
 
 	// Filling server information
 	servaddr.sin_family = AF_INET; // IPv4
 	servaddr.sin_addr.s_addr = INADDR_ANY;
 	servaddr.sin_port = htons(PORT);
-
-	// Bind the socket with the server address
-	if ( bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr)) == -1 )
+	
+	if(binds(sockfd,servaddr)==0)
 	{
-		perror("bind failed");
-		return 0;
+		return 1;
 	}
-
+	
 	len = sizeof(cliaddr); //len is value/resuslt
 	
 	int b = 1;
