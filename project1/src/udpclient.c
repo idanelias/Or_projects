@@ -24,9 +24,17 @@ void receives(char *buf,int sockfd,struct sockaddr_in servaddr)//Receives from t
 	printf("%s\n", buf);
 }
 
-void memsetfunc(struct sockaddr_in addr)
+void memsetfunc(struct sockaddr_in *addr)
 {
-	memset(&addr, 0, sizeof(addr));
+	memset(addr, 0, sizeof(&addr));
+ 	printf("123");
+ 	
+ 	
+	// Filling server information
+	addr->sin_family = AF_INET;
+	addr->sin_port = htons(PORT);
+	addr->sin_addr.s_addr = INADDR_ANY;
+//	printf("456");
 }
 
 int sock()
@@ -49,16 +57,18 @@ int main(char *argv[]) {
 	sockfd = sock();
 	if ( sockfd  == -1 )
 	{
-		printf("server not found\n");
 		return 0;
 	}
 
-	memsetfunc(servaddr);
+	memsetfunc(&servaddr);
 
-	// Filling server information
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = htons(PORT);
-	servaddr.sin_addr.s_addr = INADDR_ANY;
+
+//	filling(servaddr);
+ // Filling server information
+//	servaddr.sin_family = AF_INET;
+//	servaddr.sin_port = htons(PORT);
+//	servaddr.sin_addr.s_addr = INADDR_ANY;
+
 
 	
 	int n, len;
