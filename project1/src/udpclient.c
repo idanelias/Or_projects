@@ -27,14 +27,12 @@ void receives(char *buf,int sockfd,struct sockaddr_in servaddr)//Receives from t
 void memsetfunc(struct sockaddr_in *addr)
 {
 	memset(addr, 0, sizeof(&addr));
- 	printf("123");
  	
  	
 	// Filling server information
 	addr->sin_family = AF_INET;
 	addr->sin_port = htons(PORT);
 	addr->sin_addr.s_addr = INADDR_ANY;
-//	printf("456");
 }
 
 int sock()
@@ -61,15 +59,6 @@ int main(char *argv[]) {
 	}
 
 	memsetfunc(&servaddr);
-
-
-//	filling(servaddr);
- // Filling server information
-//	servaddr.sin_family = AF_INET;
-//	servaddr.sin_port = htons(PORT);
-//	servaddr.sin_addr.s_addr = INADDR_ANY;
-
-
 	
 	int n, len;
 	while(1)
