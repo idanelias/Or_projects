@@ -1,7 +1,7 @@
 all: clean start server client
 
 start:
-	mkdir /var/tmp/chat
+	mkdir -p /var/tmp/chat
 	cd /var/tmp/chat
 	cp -R /mnt/chat/*  .
 	dos2unix makefile src/* include/* 
