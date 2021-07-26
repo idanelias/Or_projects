@@ -4,6 +4,7 @@
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
+char room[3];
 
 void str_trim_lf(char* arr, int length)// trim \n
 {
@@ -23,18 +24,16 @@ void catch_ctrl_c_and_exit(int sig)
 	flag = 1;
 }
 
-//or_
 void send_msg_handler()
 {
 	char st[LEN] = {};
 	char buffer[LEN + 32] = {};
 	while(1)
 	{
-//		stout();
 		fgets(st, LEN, stdin);
 		str_trim_lf(st, LEN);
 
-		if (strcmp(st, "exit") == 0 || st[0]=='\0')
+		if (strcmp(st, "exit") == 0 /*|| st[0]=='\0'*/)
 		{
 			break;
     	}
@@ -49,6 +48,7 @@ void send_msg_handler()
 	flag=1;
 }
 
+//Receive message.
 void recv_msg_handler()
 {
 	char baf[LEN] = {};
@@ -58,7 +58,6 @@ void recv_msg_handler()
     	if (receive > 0)
 		{
     		printf("%s", baf);
-//    		stout();
     	}
 		else if (receive == 0)
 		{
@@ -82,13 +81,27 @@ int main(int argc, char **argv)
 
 	char *ip = "127.0.0.1";
 	int port = atoi(argv[1]);
-
+	
 	signal(SIGINT, catch_ctrl_c_and_exit);
+
+	struct sockaddr_in server_addr;
+
+	//Socket settings
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = inet_addr(ip);
+	server_addr.sin_port = htons(port);
+
+	//Connect to Server
+	if ((connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr))) == -1)
+	{
+		perror("client: connect");
+		return 0;
+	}
 
 	printf("Please enter your name: ");
 	fgets(name, 32, stdin);
 	str_trim_lf(name, strlen(name));
-
 
 	if (strlen(name) > 32 || strlen(name) < 2)
 	{
@@ -96,24 +109,14 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	struct sockaddr_in server_addr;
-
-	/* Socket settings */
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr(ip);
-	server_addr.sin_port = htons(port);
-
-
-  // Connect to Server
-	if ((connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr))) == -1)
-	{
-		perror("client: connect");
-		return 0;
-	}
-
-	// Send name
+	//Send name
 	send(sockfd, name, 32, 0);
+	
+	printf("What room would you like to be in? \n r1 r2 or r3\n");
+	fgets(room,3,stdin);
+	str_trim_lf(room, 2);
+
+	send(sockfd, room, 2, 0);
 
 	printf("	WELCOME :)\n");
 
@@ -125,16 +128,19 @@ int main(int argc, char **argv)
 	}
 
 	pthread_t recv_msg;
-	if(pthread_create(&recv_msg, NULL, (void *) recv_msg_handler, NULL) != 0){
+	if(pthread_create(&recv_msg, NULL, (void *) recv_msg_handler, NULL) != 0)
+	{
 		perror("client: pthread");
 		return 0;
 	}
 
-	while (1){
-		if(flag){
+	while (1)
+	{
+		if(flag)
+		{
 			printf("\n Good Bye :)\n");
 			break;
-    }
+    	}
 	}
 
 	close(sockfd);
