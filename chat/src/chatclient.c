@@ -6,19 +6,6 @@ int sockfd = 0;
 char name[32];
 char room[3];
 
-void str_trim_lf(char* arr, int length)// trim \n
-{
-    int i;
-    for (i = 0; i < length; i++)
-	{
-	    if (arr[i] == '\n')
-		{
-			arr[i] = '\0';
-			break;
-		}
-	}
-}
-
 void catch_ctrl_c_and_exit(int sig)
 {
 	flag = 1;
@@ -28,22 +15,26 @@ void send_msg_handler()
 {
 	char st[LEN] = {};
 	char buffer[LEN + 32] = {};
-	while(1)
+	bool work = true;
+	while(work)
 	{
 		fgets(st, LEN, stdin);
 		str_trim_lf(st, LEN);
 
-		if (strcmp(st, "exit") == 0 /*|| st[0]=='\0'*/)
+		if (strcmp(st, "~exit~") == 0 /*|| st[0]=='\0'*/)
 		{
-			break;
+			work = false;
     	}
 		else
 		{
 			sprintf(buffer, "%s: %s \n", name, st);
 			send(sockfd, buffer, strlen(buffer), 0);
 		}
-		bzero(st, LEN);
-		bzero(buffer, LEN + 32);
+		if (work)
+		{
+			bzero(st, LEN);
+			bzero(buffer, LEN + 32);
+		}
 	}
 	flag=1;
 }
@@ -52,7 +43,8 @@ void send_msg_handler()
 void recv_msg_handler()
 {
 	char baf[LEN] = {};
-	while (1)
+	bool work = true;
+	while(work)
 	{
 		int receive = recv(sockfd, baf, LEN, 0);
     	if (receive > 0)
@@ -61,13 +53,16 @@ void recv_msg_handler()
     	}
 		else if (receive == 0)
 		{
-			break;
+			work = false;
     	}
 		else
 		{
 			perror("recv");
 		}
-		memset(baf, 0, sizeof(baf));
+		if (work)
+		{
+			memset(baf, 0, sizeof(baf));
+		}
 	}
 }
 
@@ -139,11 +134,8 @@ int main(int argc, char **argv)
 		if(flag)
 		{
 			printf("\n Good Bye :)\n");
-			break;
+			close(sockfd);
+			return 0;
     	}
 	}
-
-	close(sockfd);
-
-	return 0;
 }

@@ -10,6 +10,7 @@ int port = 0;
 char *ip = "127.0.0.1";
 int option = 1;
 struct sockaddr_in serv_addr;
+bool work = true;
 
 //Client structure
 typedef struct
@@ -51,18 +52,6 @@ void print_log (char *msg )
     fclose (fd);
 }
 
-void str_trim_lf (char* arr, int length)
-{
-	int i;
-	for (i = 0; i < length; i++)// trim \n
-	{
-		if (arr[i] == '\n')
-		{
-      		arr[i] = '\0';
-      		break;
-    	}
-  	}
-}
 
 void printclient(struct sockaddr_in addr)
 {
@@ -77,13 +66,13 @@ void printclient(struct sockaddr_in addr)
 void queue_add(client_t *cl)
 {
 	pthread_mutex_lock(&clients_mutex);
-
-	for(int i=0; i < MAX_CLIENTS; ++i)
+	work = true;
+	for(int i=0; i < MAX_CLIENTS && work; ++i)
 	{
 		if(!clients[i])
 		{
 			clients[i] = cl;
-			break;
+			work = false;
 		}
 	}
 	pthread_mutex_unlock(&clients_mutex);
@@ -93,15 +82,15 @@ void queue_add(client_t *cl)
 void queue_remove(int uid)
 {
 	pthread_mutex_lock(&clients_mutex);
-
-	for(int i=0; i < MAX_CLIENTS; ++i)
+	work = true;
+	for(int i=0; i < MAX_CLIENTS && work; ++i)
 	{
 		if(clients[i])
 		{
 			if(clients[i]->uid == uid)
 			{
 				clients[i] = NULL;
-				break;//////////////////////////////////////////////////
+				work = false;
 			}
 		}
 	}
@@ -113,8 +102,9 @@ void queue_remove(int uid)
 void sendinfo(char *s, int uid, char room)
 {
 	pthread_mutex_lock(&clients_mutex);
+	work = true;
 
-	for(int i=0; i<MAX_CLIENTS; ++i)
+	for(int i=0; i<MAX_CLIENTS && work; ++i)
 	{
 		if(clients[i])
 		{
@@ -123,7 +113,7 @@ void sendinfo(char *s, int uid, char room)
 				if(write(clients[i]->sockfd, s, strlen(s)) < 0)
 				{
 					perror("server: write to descriptor failed");
-					break;
+					work = false;
 				}
 			}
 		}
@@ -167,38 +157,36 @@ void *handle_client(void *arg)
 
 	bzero(buff, LEN);
 
-	while(1)
+	while(work)
 	{
-		if (leave_flag)
+		if (!leave_flag)
 		{
-			break;
-		}
-
-		int receive = recv(cli->sockfd, buff, LEN, 0);
-		if (receive > 0)
-		{
-			if(strlen(buff) > 0)
+			int receive = recv(cli->sockfd, buff, LEN, 0);
+			if (receive > 0)
 			{
-				sendinfo(buff, cli->uid,cli->room);
-				str_trim_lf(buff, strlen(buff));
-				printf("%s\n", buff);
+				if(strlen(buff) > 0)
+				{
+					sendinfo(buff, cli->uid,cli->room);
+					str_trim_lf(buff, strlen(buff));
+					printf("%s\n", buff);
+				}
 			}
-		}
-		else if (receive == 0 || strcmp(buff, "exit") == 0)
-		{
-			sprintf(buff, "%s has left\n", cli->name);
-			printf("%s", buff);
-			print_log(buff);
-			sendinfo(buff, cli->uid,cli->room);
-			leave_flag = 1;
-		}
-		else
-		{
-			printf("server: -1\n");
-			leave_flag = 1;
-		}
+			else if (receive == 0 || strcmp(buff, "exit") == 0)
+			{
+				sprintf(buff, "%s has left\n", cli->name);
+				printf("%s", buff);
+				print_log(buff);
+				sendinfo(buff, cli->uid,cli->room);
+				leave_flag = 1;
+			}
+			else
+			{
+				printf("server: -1\n");
+				leave_flag = 1;
+			}
 
-		bzero(buff, LEN);
+			bzero(buff, LEN);
+		}
 	}
 
 	//Delete client from queue and yield thread.
@@ -206,7 +194,8 @@ void *handle_client(void *arg)
 	queue_remove(cli->uid);
 	free(cli);
 	cli_count--;
-	pthread_detach(pthread_self());
+//og	pthread_detach(pthread_self());
+	pthread_exit(0);
 
 	return NULL;
 }
@@ -274,23 +263,23 @@ int main(int argc, char **argv)
 			printclient(cli_addr);
 			printf(":%d\n", cli_addr.sin_port);
 			close(connfd);
-			continue;/////////////////////////////////////
 		}
+		else
+		{
+			//Client settings
+		//	free(*cli);
+			client_t *cli = (client_t *)malloc(sizeof(client_t));
+			cli->address = cli_addr;
+			cli->sockfd = connfd;
+			cli->uid = uid++;
 
-		//Client settings
-	//	free(*cli);
-		client_t *cli = (client_t *)malloc(sizeof(client_t));
-		cli->address = cli_addr;
-		cli->sockfd = connfd;
-		cli->uid = uid++;
+			//Add client to the queue and fork thread.
+			queue_add(cli);
+			pthread_create(&tid, NULL, &handle_client, (void*)cli);
 
-		//Add client to the queue and fork thread.
-		queue_add(cli);
-		pthread_create(&tid, NULL, &handle_client, (void*)cli);
-
-		//Reduce CPU usage.
-		sleep(1);
+			//Reduce CPU usage.
+			sleep(1);
+		}
 	}
-
 	return 0;
 }
