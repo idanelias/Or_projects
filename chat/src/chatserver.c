@@ -171,7 +171,7 @@ void *handle_client(void *arg)
 					printf("%s\n", buff);
 				}
 			}
-			else if (receive == 0 || strcmp(buff, "exit") == 0)
+			else if (receive == 0 || strcmp(buff, "~exit~") == 0)
 			{
 				sprintf(buff, "%s has left\n", cli->name);
 				printf("%s", buff);
