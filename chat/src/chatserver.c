@@ -10,10 +10,10 @@ int port = 0;
 char *ip = "127.0.0.1";
 int option = 1;
 struct sockaddr_in serv_addr;
-bool work = true;
+bool work;
 
 //Client structure
-typedef struct
+typedef struct client
 {
 	struct sockaddr_in address;
 	int sockfd;
@@ -141,7 +141,7 @@ void *handle_client(void *arg)
 	}
 	else
 	{
-		strcpy(cli->name, name);
+		strcpy(cli->name, name + 1);
 		recv(cli->sockfd, room, 2, 0);
 		printf("room [%s]\n",room);
 		if(room[1] == '1' || room[1] == '2' || room[1] == '3')
@@ -157,36 +157,33 @@ void *handle_client(void *arg)
 
 	bzero(buff, LEN);
 
-	while(work)
+	while(!leave_flag)
 	{
-		if (!leave_flag)
+		int receive = recv(cli->sockfd, buff, LEN, 0);
+		if (receive > 0)
 		{
-			int receive = recv(cli->sockfd, buff, LEN, 0);
-			if (receive > 0)
+			if(strlen(buff) > 0)
 			{
-				if(strlen(buff) > 0)
-				{
-					sendinfo(buff, cli->uid,cli->room);
-					str_trim_lf(buff, strlen(buff));
-					printf("%s\n", buff);
-				}
-			}
-			else if (receive == 0 || strcmp(buff, "~exit~") == 0)
-			{
-				sprintf(buff, "%s has left\n", cli->name);
-				printf("%s", buff);
-				print_log(buff);
 				sendinfo(buff, cli->uid,cli->room);
-				leave_flag = 1;
+				str_trim_lf(buff, strlen(buff));
+				printf("%s\n", buff);
 			}
-			else
-			{
-				printf("server: -1\n");
-				leave_flag = 1;
-			}
-
-			bzero(buff, LEN);
 		}
+		else if (receive == 0 || strcmp(buff, "~exit~") == 0)
+		{
+			sprintf(buff, "%s has left\n", cli->name);
+			printf("%s", buff);
+			print_log(buff);
+			sendinfo(buff, cli->uid,cli->room);
+			leave_flag = 1;
+		}
+		else
+		{
+			printf("server: -1\n");
+			leave_flag = 1;
+		}
+
+		bzero(buff, LEN);
 	}
 
 	//Delete client from queue and yield thread.
@@ -194,7 +191,7 @@ void *handle_client(void *arg)
 	queue_remove(cli->uid);
 	free(cli);
 	cli_count--;
-//og	pthread_detach(pthread_self());
+
 	pthread_exit(0);
 
 	return NULL;

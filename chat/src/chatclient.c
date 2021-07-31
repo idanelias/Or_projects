@@ -19,15 +19,16 @@ void send_msg_handler()
 	while(work)
 	{
 		fgets(st, LEN, stdin);
+		strcat(st,"3");
 		str_trim_lf(st, LEN);
-
+		
 		if (strcmp(st, "~exit~") == 0 /*|| st[0]=='\0'*/)
 		{
 			work = false;
     	}
 		else
 		{
-			sprintf(buffer, "%s: %s \n", name, st);
+			sprintf(buffer, "%s: %s \n", name+1, st);
 			send(sockfd, buffer, strlen(buffer), 0);
 		}
 		if (work)
@@ -93,9 +94,11 @@ int main(int argc, char **argv)
 		perror("client: connect");
 		return 0;
 	}
-
+	
+	strcpy(name,"1");
+	
 	printf("Please enter your name: ");
-	fgets(name, 32, stdin);
+	fgets(name+1, 31, stdin);
 	str_trim_lf(name, strlen(name));
 
 	if (strlen(name) > 32 || strlen(name) < 2)
@@ -103,14 +106,16 @@ int main(int argc, char **argv)
 		printf("Name must be less than 30 and more than 2 characters.\n");
 		return 0;
 	}
-
+	
 	//Send name
 	send(sockfd, name, 32, 0);
 	
 	printf("What room would you like to be in? \n r1 r2 or r3\n");
 	fgets(room,3,stdin);
 	str_trim_lf(room, 2);
-
+	
+	strcat(room,"2");
+	
 	send(sockfd, room, 2, 0);
 
 	printf("	WELCOME :)\n");
