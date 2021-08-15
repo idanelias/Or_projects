@@ -76,6 +76,6 @@ void free_ether(char* buf);
 pip_h free_ip(char* buf);
 void print_packet(char* buffer);
 void free_tcp(char* buf, pip_h ip);
-void free_data(char* buf);
+void free_data(char* buf, pip_h ip);
 
 #endif

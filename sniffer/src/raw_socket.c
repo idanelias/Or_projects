@@ -69,11 +69,13 @@ void print_packet(char* buffer)
 	free_ether(buffer);
 
 	pip_h ip = free_ip(buffer);
+	
 	if(ip->protocol == 5 || ip->protocol == 6)
 	{
 		free_tcp(buffer, ip);
 	}
-	free_data(buffer);
+	
+	free_data(buffer, ip);
 	
 }
 
@@ -171,7 +173,19 @@ void free_tcp(char* buf, pip_h ip)
 	printf("\n		--------------------------------------------------\n");
 }
 
-void free_data(char* buf)
+void free_data(char* buf, pip_h ip)
 {
+	unsigned char * data = (buf + ((unsigned int)(ip->len_internet_hdr))*4 + sizeof(ether_h) + sizeof(tcp_h));
+	unsigned int remaining_data = strlen(buf) - (((unsigned int)(ip->len_internet_hdr))*4 + sizeof(ether_h) + sizeof(tcp_h));
+
+	printf("\n");
+
+	for(int i=0;i< 0 - remaining_data;i++)
+	{
+		if(i!=0 && i%16==0)
+			printf("\n");
+		printf(" %.2X ",data[i]);
+	}
+	
 }
 
