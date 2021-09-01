@@ -1,15 +1,15 @@
 obj-m += keylogger.o
 
-all: start
+all: 
 	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules
 
 start:
-	cp /mnt/keylogger/*/var/tmp/keylogger/
+	cp /mnt/keylogger/* /var/tmp/keylogger/
 	cd /var/tmp/keylogger/
-	dos2unix makefile src/keylogger.c
+	dos2unix makefile keylogger.c
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) clean
-	rm -f -- keylogger.o
-	rm -f -- makefile
+
+
 
