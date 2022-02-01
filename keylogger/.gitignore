@@ -1,0 +1,8 @@
+*.order
+*.ko
+*.o
+*.cmd
+Module.symvers
+keylogger.mod
+keylogger.mod.c
+
